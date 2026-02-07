@@ -68,7 +68,9 @@ const registerSearchEngines = (searchEngines, searchleader) =>
       s.alias,
       s.name,
       s.search,
-      "",
+      // Surfingkeys' "search leader" key. We don't use Surfingkeys' default
+      // mappings (skipMaps: true), but some versions expect a non-empty leader.
+      "s",
       s.compl,
       s.callback,
       undefined,

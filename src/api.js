@@ -22,9 +22,70 @@ const getApi = () => {
 
   if (typeof api !== "undefined") {
     // Surfingkeys >= 1.0
+    // Normalize the search-alias API: different Surfingkeys versions expose
+    // either addSearchAliasX (extended signature) or addSearchAlias.
+    const skApi = api
+    const addSearchAliasCompat = (
+      alias,
+      prompt,
+      searchUrl,
+      leaderKey,
+      suggestUrl,
+      suggestCb,
+      postData,
+      options
+    ) => {
+      if (typeof skApi.addSearchAliasX === "function") {
+        return skApi.addSearchAliasX(
+          alias,
+          prompt,
+          searchUrl,
+          leaderKey,
+          suggestUrl,
+          suggestCb,
+          postData,
+          options
+        )
+      }
+
+      if (typeof skApi.addSearchAlias !== "function") {
+        throw new Error("Surfingkeys API missing addSearchAlias/addSearchAliasX")
+      }
+
+      // Try a few known signatures in decreasing specificity.
+      try {
+        return skApi.addSearchAlias(
+          alias,
+          prompt,
+          searchUrl,
+          leaderKey,
+          suggestUrl,
+          suggestCb,
+          postData,
+          options
+        )
+      } catch (e) {
+        // ignore and fall through
+      }
+      try {
+        return skApi.addSearchAlias(
+          alias,
+          prompt,
+          searchUrl,
+          suggestUrl,
+          suggestCb,
+          options
+        )
+      } catch (e) {
+        // ignore and fall through
+      }
+      return skApi.addSearchAlias(alias, prompt, searchUrl, options)
+    }
+
     return {
       v1: true,
-      ...api,
+      ...skApi,
+      addSearchAlias: addSearchAliasCompat,
     }
   }
 
